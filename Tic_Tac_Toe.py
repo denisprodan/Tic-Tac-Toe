@@ -20,28 +20,42 @@ class Tic_Tac_Toe:
         self.mouse_pos_menu = [0, 0]
         """initializing board"""
         pygame.init()
-        self.win = pygame.display.set_mode((600, 750))
+        self.winWidth = 600
+        self.winHeight = 750
+        self.win = pygame.display.set_mode((self.winWidth, self.winHeight))
         pygame.display.set_caption("Tic tac toe")
         self.start_game()
 
-    def start_game(self):
+    def start_game(self): 
         flag = True
         self.win.fill((255, 255, 255))
         while flag:
             image = pygame.image.load('start.png')
-            image = pygame.transform.scale(image, (200, 200))
+            image = pygame.transform.scale(image, (self.winWidth/3, self.winWidth/3))
             win_rect = self.win.get_rect()
             image_rect = image.get_rect()
             image_rect.center = win_rect.center
+            redbox = pygame.image.load("redbox.png")
+            redbox = pygame.transform.scale(redbox, (self.winWidth*2/3, self.winWidth*2/3))
+            redbox_rect = redbox.get_rect()
+            redbox_rect.center = win_rect.center
+            greenbox = pygame.image.load("greenbox.png")
+            greenbox = pygame.transform.scale(greenbox, (redbox_rect.height, redbox_rect.width))
+        
+            
+
             self.win.blit(image, image_rect)
             pygame.display.update()
             self.check_events()
-            distance = sqrt((image_rect.center[0] - self.mouse_pos_menu[0]) ** 2 +
-                            (image_rect.center[1] - self.mouse_pos_menu[1]) ** 2)
-
-            if distance < image_rect[2] // 2:
-                self.playing = True
-                flag = False
+            mx, my = self.mouse_pos_menu[0], self.mouse_pos_menu[1]
+            
+            if (mx > redbox_rect.x) and (mx < (redbox_rect.x + redbox_rect.width)) and (my > redbox_rect.y) and (my < redbox_rect.y+redbox_rect.height):
+                self.win.blit(greenbox, redbox_rect)
+                if pygame.mouse.get_pressed()[0]:
+                    self.playing = True
+                    flag = False
+            else:
+                self.win.blit(redbox, redbox_rect)
 
     def run_game(self):
         self.make_board()
@@ -159,7 +173,7 @@ class Tic_Tac_Toe:
             if event.type == pygame.QUIT:
                 self.playing = False
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEMOTION:
                 if pygame.mouse.get_pressed()[0]:
                     if self.playing:
                         pos = list(pygame.mouse.get_pos())
@@ -170,10 +184,10 @@ class Tic_Tac_Toe:
                                 self.board[pos[1]][pos[0]] = self.current_player
                                 self.update_screen(pos)
                                 self.flip_player()
-                    else:
-                        self.mouse_pos_menu.pop()
-                        self.mouse_pos_menu.pop()
-                        self.mouse_pos_menu = list(pygame.mouse.get_pos())
+                    
+                self.mouse_pos_menu.pop()
+                self.mouse_pos_menu.pop()
+                self.mouse_pos_menu = list(pygame.mouse.get_pos())
 
     def finish_the_game(self, pos1=None, pos2=None, pos3=None):
         if self.winner:
